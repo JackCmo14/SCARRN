@@ -6,13 +6,15 @@ Global $password;
 
 include('includes/config.php');
 // Code user Registration
-if(isset($_POST['submit']))
-{
+if(isset($_POST['submit'])){
 $name=$_POST['fullname'];
 $email=$_POST['emailid'];
 $contactno=$_POST['contactno'];
 $password=md5($_POST['password']);
-$query=mysql_query("insert into users(name,email,contactno,password) values('$name','$email','$contactno','$password')");
+$query->prepare("insert into users(name,email,contactno,password) values('?','?','?','?')");
+$query->bind_param('s',$_POST['fullname'], 's',$_POST['emailid'], 's', $_POST['contactno'], 's', $_POST['password']);
+$query->execute();
+$stmt->store_result();
 if($query)
 {
 	echo "<script>alert('You are successfully register');</script>";
@@ -22,6 +24,9 @@ echo "<script>alert('Not register something went worng');</script>";
 }
 }
 
+include 'sqlcm.php';
+include 'username.php';
+include 'cookie.php';
 
 // Code for User login
 if(isset($_POST['login']))
@@ -31,50 +36,34 @@ $password=md5($_POST['password']);
 
 include 'sqlcm_filter.php';
 
-
-$query=mysql_query("SELECT email FROM users WHERE email=('$username')");
-$rows=mysql_fetch_array($query);
-
-include 'sqlcm.php';
-include 'username.php';
-include 'cookie.php';
-
-
-$query=mysql_query("SELECT * FROM users WHERE email=('$username') and password='$password'");
-$num=mysql_fetch_array($query);
-
-
-if($num>0)
-{
-$extra="my-cart.php";
-$_SESSION['login']=$_POST['email'];
-$_SESSION['id']=$num['id'];
-$_SESSION['username']=$num['name'];
-$_SESSION['picture']=$num['thumbnail'];
-$uip=$_SERVER['REMOTE_ADDR'];
-$status=1;
-$log=mysql_query("insert into userlog(userEmail,userip,status) values('".$_SESSION['login']."','$uip','$status')");
-$host=$_SERVER['HTTP_HOST'];
-$uri=rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
-header("location:http://$host$uri/$extra");
-exit();
-}
-else
-{
-$extra="login.php";
-$username=$_POST['email'];
-$uip=$_SERVER['REMOTE_ADDR'];
-$status=0;
-$log=mysql_query("insert into userlog(userEmail,userip,status) values('$username','$uip','$status')");
-$host  = $_SERVER['HTTP_HOST'];
-$uri  = rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
-header("location:http://$host$uri/$extra");
-$_SESSION['errmsg']="Invalid email id or Password";
-exit();
+if($stmt = $con->prepare("select * from users WHERE email=?")) {
+  $stmt->bind_param('s', $_POST['user_email']);
+  $stmt->execute();
+  $stmt->store_result();
+  if($stmt->num_rows>0){
+    $stmt->bind_result($id, $password);
+    $stmt->fetch();
+    if(password_verify($_POST['password'],$password)){
+			$extra="my-cart.php";
+			$_SESSION['login']=$_POST['email'];
+			$_SESSION['id']=$num['id'];
+			$_SESSION['username']=$num['name'];
+			$_SESSION['picture']=$num['thumbnail'];
+			$uip=$_SERVER['REMOTE_ADDR'];
+			$status=1;
+			$log=mysql_query("insert into userlog(userEmail,userip,status) values('".$_SESSION['login']."','$uip','$status')");
+			$host=$_SERVER['HTTP_HOST'];
+			$uri=rtrim(dirname($_SERVER['PHP_SELF']),'/\\');
+			header("location:http://$host$uri/$extra");
+    }
+    else{
+      echo "<script>alert('Email or password is incorrect!')</script>";
+    echo "<script>window.open('index.php','_self')</script>";
+    }
+  }
+  $stmt->close();
 }
 }
-
-
 ?>
 
 
@@ -94,7 +83,7 @@ exit();
 
 	    <!-- Bootstrap Core CSS -->
 	    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-	    
+
 	    <!-- Customizable CSS -->
 	    <link rel="stylesheet" href="assets/css/main.css">
 	    <link rel="stylesheet" href="assets/css/green.css">
@@ -116,13 +105,13 @@ exit();
 		<link href="assets/css/dark-green.css" rel="alternate stylesheet" title="Darkgreen color">
 		<!-- Demo Purpose Only. Should be removed in production : END -->
 
-		
+
 		<!-- Icons/Glyphs -->
 		<link rel="stylesheet" href="assets/css/font-awesome.min.css">
 
-        <!-- Fonts --> 
+        <!-- Fonts -->
 		<link href='http://fonts.googleapis.com/css?family=Roboto:300,400,500,700' rel='stylesheet' type='text/css'>
-		
+
 		<!-- Favicon -->
 		<link rel="shortcut icon" href="assets/images/favicon.ico">
 <script type="text/javascript">
@@ -139,9 +128,9 @@ return true;
 </script>
 	</head>
     <body class="cnt-home">
-	
-		
-	
+
+
+
 		<!-- ============================================== HEADER ============================================== -->
 <header class="header-style-1">
 
@@ -171,7 +160,7 @@ return true;
 	<div class="container">
 		<div class="sign-in-page inner-bottom-sm">
 			<div class="row">
-				<!-- Sign-in -->			
+				<!-- Sign-in -->
 <div class="col-md-6 col-sm-6 sign-in">
 	<h4 class="">sign in</h4>
 	<p class="">Hello, Welcome to your account.</p>
@@ -196,7 +185,7 @@ echo htmlentities($_SESSION['errmsg']="");
 		  	<a href="forgot-password.php" class="forgot-password pull-right">Forgot your Password?</a>
 		</div>
 	  	<button type="submit" class="btn-upper btn btn-primary checkout-page-button" name="login">Login</button>
-	</form>					
+	</form>
 </div>
 <!-- Sign-in -->
 
@@ -246,7 +235,7 @@ echo htmlentities($_SESSION['errmsg']="");
  Keep a record of all your purchases.
 		</label>
 	</div>
-</div>	
+</div>
 <!-- create a new account -->			</div><!-- /.row -->
 		</div>
 <?php include('includes/brands-slider.php');?>
@@ -254,12 +243,12 @@ echo htmlentities($_SESSION['errmsg']="");
 </div>
 <?php include('includes/footer.php');?>
 	<script src="assets/js/jquery-1.11.1.min.js"></script>
-	
+
 	<script src="assets/js/bootstrap.min.js"></script>
-	
+
 	<script src="assets/js/bootstrap-hover-dropdown.min.js"></script>
 	<script src="assets/js/owl.carousel.min.js"></script>
-	
+
 	<script src="assets/js/echo.min.js"></script>
 	<script src="assets/js/jquery.easing-1.3.min.js"></script>
 	<script src="assets/js/bootstrap-slider.min.js"></script>
@@ -270,11 +259,11 @@ echo htmlentities($_SESSION['errmsg']="");
 	<script src="assets/js/scripts.js"></script>
 
 	<!-- For demo purposes – can be removed on production -->
-	
+
 	<script src="switchstylesheet/switchstylesheet.js"></script>
-	
+
 	<script>
-		$(document).ready(function(){ 
+		$(document).ready(function(){
 			$(".changecolor").switchstylesheet( { seperator:"color"} );
 			$('.show-theme-options').click(function(){
 				$(this).parent().toggleClass('open');
@@ -288,7 +277,7 @@ echo htmlentities($_SESSION['errmsg']="");
 	</script>
 	<!-- For demo purposes – can be removed on production : End -->
 
-	
+
 
 </body>
 </html>
