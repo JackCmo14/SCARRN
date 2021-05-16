@@ -78,50 +78,45 @@
 
 	</div>
     </div>
+<?php
+if (isset($_POST['submit'])) {
+  function $str {
+    if (get_magic_quotes_gpc()) {
+      $str = $str;
+    }
+  return $str;
+  }
+  $email = $_POST['email'];
+  $password=$_POST['password'];
+  $pass=$password;
 
 
-
-		 <?php
-                            if (isset($_POST['submit'])) {
-                            function $str {
-                            if (get_magic_quotes_gpc()) {
-                            $str = $str;
-                            }
-                            return $str;
-
-                }
-                            $email = $_POST['email'];
-                           $password=$_POST['password'];
-                           $pass=$password;
-
-
-                            $query = mysql_query("select * from customers where Email='$email' and Password='$pass' ") or die(mysql_error());
-                            $count = mysql_num_rows($query);
-                            $row = mysql_fetch_array($query);
-                            if ($count > 0) {
-                            session_start();
-                            session_regenerate_id();
-                            $_SESSION['id'] = $row['CustomerID'];
-                            $memid=$row['CustomerID'];
-                            $Fname=$row['Firstname'];
+  $query = mysql_query("select * from customers where Email='$email' and Password='$pass' ") or die(mysql_error());
+  $count = mysql_num_rows($query);
+  $row = mysql_fetch_array($query);
+  if ($count > 0) {
+    session_start();
+    session_regenerate_id();
+    $_SESSION['id'] = $row['CustomerID'];
+    $memid=$row['CustomerID'];
+    $Fname=$row['Firstname'];
 $user=$row['Email'];
 date_default_timezone_set('Asia/Manila');
     $date=date('F j, Y g:i:a  ');
 
 mysql_query("insert into loginout_history(CustomerID,User,Name,Time_in,Time_out)values('$memid','$user','$Fname','$date','')")or die (mysql_error());
-                           echo "<script>window.location.replace('user_index.php')</script>";
-                            session_write_close();
-
-
-                       } else {
-                        session_write_close();
-                           ?>
-                 <script type="text/javascript">
-                  alert("Invalid Username or Password");
-                      </script>
-                     <?php }
-               }
-       ?>
+echo "<script>window.location.replace('user_index.php')</script>";
+session_write_close();
+}
+else {
+session_write_close();
+?>
+<script type="text/javascript">
+alert("Invalid Username or Password");
+</script>
+<?php }
+}
+?>
        <br /><br />
 <center class="well  container">
 <div class="">
