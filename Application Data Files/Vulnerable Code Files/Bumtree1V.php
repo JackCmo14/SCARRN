@@ -66,13 +66,6 @@ global $password;
 				}
 			}
 
-			if (isset($email)) {
-				$filterdEmail = $email;
-				if ($filterdEmail, FILTER_VALIDATE_EMAIL != true) {
-					$formErrors[] = 'This Email Is Not Valid';
-				}
-			}
-
 			// Check If There's No Error Proceed The User Add
 			if (empty($formErrors)) {
 				// Check If User Exist in Database
