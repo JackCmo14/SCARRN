@@ -47,28 +47,28 @@ $username='"'.$username.'"';
 
 include 'sqlcm_filter.php';
 
-	$sql = "SELECT * FROM members WHERE username=(".$username.")";
-	$result = mysql_query($sql);
-	$rows = mysql_num_rows($result);
-	$row=mysql_fetch_array($result);
-
 //SQL countermeasure.
 include 'sqlcm.php';
 
 //user enumeration...
 include 'username.php';
 
-$query = "SELECT * FROM members WHERE username=(".$username.") AND password='$password'";
-$result = mysql_query($query)or die(mysql_error());
-
-$num_row = mysql_num_rows($result);
-		$row=mysql_fetch_array($result);
-		if( $num_row > 0 ) {
-	$_SESSION['id']=$row['member_id'];
-	$_SESSION['username']=$username;
-	$_SESSION['password']=$password;
-
-
+if($stmt = $con->prepare("select * from members WHERE username=?")) {
+  $stmt->bind_param('s', $_POST['username']);
+  $stmt->execute();
+  $stmt->store_result();
+  if($stmt->num_rows>0){
+    $stmt->bind_result($id, $password);
+    $stmt->fetch();
+    if(password_verify($_POST['password'],$password)){
+      session_regenerate_id();
+			$_SESSION['id']=$row['member_id'];
+			$_SESSION['username']=$username;
+			$_SESSION['password']=$password;
+    }
+  }
+  $stmt->close();
+}
 ?>
 	<script>
 	window.location="dasboard.php";
