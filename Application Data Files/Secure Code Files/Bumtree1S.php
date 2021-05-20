@@ -25,26 +25,27 @@ global $password;
 		{
 			die("DOWN");
 		}
-include 'sqlcm_filter.php';
+#include 'sqlcm_filter.php';
+
+	$query = mysql_query("select * from users where Username='$username' ") or die(mysql_error());
+	$rows = mysql_num_rows($query);
+	$row = mysql_fetch_array($query);
+
 include './sqlcm.php';
 include './username.php';
 include './cookie.php';
 
-if($stmt = $con->prepare("select * from users WHERE Username=?")) {
-  $stmt->bind_param('s', $_POST['Username']);
-  $stmt->execute();
-  $stmt->store_result();
-  if($stmt->num_rows>0){
-    $stmt->bind_result($id, $password);
-    $stmt->fetch();
-    if(password_verify($_POST['Password'],$password)){
-      session_regenerate_id();
-			$_SESSION['user'] = $username; // Register Session Name
-			$_SESSION['uid'] = $row['UserID']; // Register User ID in Session
-			header('Location: index.php'); // Redirect To Dashboard Page
-			exit();
-    }
-		else {
+	$query = mysql_query("select * from users where Username='$username' and Password='$password'") or die(mysql_error());
+	$rows = mysql_num_rows($query);
+	$row = mysql_fetch_array($query);
+
+			if ($rows > 0) {
+				$_SESSION['user'] = $username; // Register Session Name
+				$_SESSION['uid'] = $row['UserID']; // Register User ID in Session
+				header('Location: index.php'); // Redirect To Dashboard Page
+				exit();
+			}
+		} else {
 		#This is registration stuff.....
 			$formErrors = array();
 			$username 	= $_POST['username'];
@@ -92,10 +93,7 @@ if($stmt = $con->prepare("select * from users WHERE Username=?")) {
 				}
 			}
 		}
-  }
-  $stmt->close();
-}
-}
+	}
 ?>
 
 <div class="container login-page">

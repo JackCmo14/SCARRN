@@ -34,16 +34,17 @@
 	$username=$login;
 include 'sqlcm_filter.php';
 $username='"'.$username.'"';
-	$sql = "SELECT * FROM members WHERE login=("?")";
-$sql->bind_param('s',$_POST['.username.'])
+	$sql = "SELECT * FROM members WHERE login=(".$username.")";
+	$result = mysql_query($sql);
+	$rows = mysql_num_rows($result);
+	$row=mysql_fetch_array($result);
 //SQL countermeasure.
 include 'sqlcm.php';
 include 'cookie.php';
 include 'username.php';
 ob_flush();
 	//Create query
-	$qry="SELECT * FROM members WHERE login=('?') AND passwd='?'";
-	$qry->bind_param('s',$_POST['username'])
+	$qry="SELECT * FROM members WHERE login=(".$username.") AND passwd='".md5($password)."'";
 	$result=mysql_query($qry);
 $login=$username;
 	//Check whether the query was successful or not

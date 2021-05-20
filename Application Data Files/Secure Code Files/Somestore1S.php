@@ -4,8 +4,8 @@ Global $password;
 Global $rows;
 
 //include config.php to connect to the database
-	include("config.php");
-
+	include("config.php"); 
+	
 	//start session
     session_start();
 
@@ -14,27 +14,29 @@ $username=$_POST['magaca'];
 $password=$_POST['furaha'];
 
 include 'sqlcm_filter.php';
-//SQL countermeasure.
+
+    $sql="select Cust_Id from customer where Email=('$username')";
+    $row=mysqli_query($mysqli,$sql);
+    $rows= mysqli_num_rows($row);
+
+//SQL countermeasure. 
 include 'sqlcm.php';
 include 'username.php';
 include 'cookie.php';
 
-if($stmt = $con->prepare("select * from users WHERE Email=?")) {
-  $stmt->bind_param('s', $_POST['magaca']);
-  $stmt->execute();
-  $stmt->store_result();
-  if($stmt->num_rows>0){
-    $stmt->bind_result($id, $password);
-    $stmt->fetch();
-    if(password_verify($_POST['furaha'],$password)){
-      session_regenerate_id();
-      $_SESSION['magaca']=$rows['magaca'];
-      header("location: index.php");
+    $sql="select * from customer where Email=('$username') and Password='$password'";
+    $row=mysqli_query($mysqli,$sql);
+    $rows= mysqli_num_rows($row);
+$rowarray=mysqli_fetch_array($row);
+
+    if($rows>0)
+    {
+    $_SESSION['login_username']=$rowarray['Email'];
+	 header("location: index.php");
+    } else  {
+	   header('Location: login.php');
     }
-    else{
-      header('Location: login.php');
-    }
-  }
-  $stmt->close();
-}
+
+
 ?>
+

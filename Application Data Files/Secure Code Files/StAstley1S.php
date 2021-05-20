@@ -7,35 +7,37 @@ $host="localhost";
 
 		@mysql_connect("$host","$uname","$pas") or die ("cannot connect");
 		mysql_select_db("$db_name") or die ("cannot select db");
-
+		?>
+<?php
 if (isset($_POST['login'])){
 
 $username=$_POST['username'];
 $password=$_POST['password'];
 
-include 'sqlcm_filter.php';
+//include 'sqlcm_filter.php';
+
+$login_query=mysql_query("select * from members where email='$username'");
+$count=mysql_num_rows($login_query);
+$rows=mysql_fetch_array($login_query);
+
 //SQL countermeasure.
 include 'sqlcm.php';
 include 'username.php';
 include 'cookie.php';
 
-if($stmt = $con->prepare("select * from users WHERE email=?")) {
-  $stmt->bind_param('s', $_POST['email']);
-  $stmt->execute();
-  $stmt->store_result();
-  if($stmt->num_rows>0){
-    $stmt->bind_result($id, $password);
-    $stmt->fetch();
-    if(password_verify($_POST['password'],$password)){
-			session_start();
-			$_SESSION['id']=$row['id'];
-			header('location:members/dashboard.php');
-    }
-    else{
-    header('location:index.php');
-    }
-  }
-  $stmt->close();
+
+$login_query=mysql_query("select * from members where email='$username' and password='$password'");
+$count=mysql_num_rows($login_query);
+$row=mysql_fetch_array($login_query);
+
+
+if ($count > 0){
+session_start();
+$_SESSION['id']=$row['id'];
+header('location:members/dashboard.php');
+
+}else{
+	header('location:index.php');
 }
 }
 ?>
