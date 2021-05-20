@@ -14,41 +14,47 @@ if(isset($_POST['login']))
 	$con=mysql_connect("localhost","root","Thisisverysecret18") or die ("DOWN!");
 		if ($con) {
 			mysql_select_db("carrental",$con);
-
+           
 		}
 		else
 		{
 			die("DOWN");
-		}
+		}	
 
 
 include './sqlcm_filter.php';
 
 	//Username valid???
-														if($stmt = $con->prepare("select * from users WHERE EmailId='?'")) {
-														  $query->bind_param('s',$_POST['EmailId']);
-														  $stmt->execute();
-														  $stmt->store_result();
-														  if($stmt->num_rows>0){
-														    $stmt->bind_result($id, $password);
-														    $stmt->fetch();
-														    if(password_verify($_POST['Password'],$password)){
-																	session_start();
-		                            	$_SESSION['login'] = $row['EmailId'];
-					    										$_SESSION['fname'] = $row['FullName'];
 
-					    										$currentpage=$_SERVER['REQUEST_URI'];
-					    										echo "<script type='text/javascript'> document.location = '$currentpage'; </script>";
-														    }
-														    else{
-																		echo "<script>alert('Invalid Details');</script>";
-															    	$currentpage=$_SERVER['REQUEST_URI'];
-															    	echo "<script type='text/javascript'> document.location = '$currentpage'; </script>";
-														    }
+                            $query = mysql_query("select * from tblusers where EmailId='$username' ") or die(mysql_error());
+                            $rows = mysql_num_rows($query);
+                            $row = mysql_fetch_array($query);
 
+ 
 include './sqlcm.php';
 include './username.php';
 include './cookie.php';
+
+	//Username valid???
+                            $query = mysql_query("select * from tblusers where EmailId='$username' and Password='$password' ") or die(mysql_error());
+                            $rows = mysql_num_rows($query);
+                            $row = mysql_fetch_array($query);
+
+                            if ($rows > 0) {
+                            	session_start();
+                            	$_SESSION['login'] = $row['EmailId'];
+			    	$_SESSION['fname'] = $row['FullName'];
+
+			    	$currentpage=$_SERVER['REQUEST_URI'];
+			    	echo "<script type='text/javascript'> document.location = '$currentpage'; </script>";
+
+			    } else {
+			  	echo "<script>alert('Invalid Details');</script>";
+			    	$currentpage=$_SERVER['REQUEST_URI'];
+			    	echo "<script type='text/javascript'> document.location = '$currentpage'; </script>";
+
+
+			    }
 
 // ******************************************************************************************************
 
@@ -77,14 +83,14 @@ include './cookie.php';
                 </div>
                 <div class="form-group checkbox">
                   <input type="checkbox" id="remember">
-
+               
                 </div>
                 <div class="form-group">
                   <input type="submit" name="login" value="Login" class="btn btn-block">
                 </div>
               </form>
             </div>
-
+           
           </div>
         </div>
       </div>
